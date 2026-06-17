@@ -1,0 +1,11 @@
+# .pipeline/roles.yaml — one skill name per stage slot.
+# The pipeline-* shim resolves these per CONTRACT.md; any row may be swapped for a
+# best-of-breed skill. roles.yaml stores only the skill NAME; the runtime (which TG
+# bot / which frontier LLM) decides who executes.
+prd:    [grill-me, think]
+arch:   grill-with-docs
+task:   think
+impl:   goal-driven-implementation   # full name, not bare `goal`
+review: check
+hunt:   hunt
+improve: think
