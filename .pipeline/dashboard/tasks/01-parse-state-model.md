@@ -1,7 +1,7 @@
 ---
 id: "01"
 title: parse(.pipeline/) -> StateModel (the frozen core)
-status: in-progress
+status: review
 attempts: 0
 verify: npm test
 spec-paths:
