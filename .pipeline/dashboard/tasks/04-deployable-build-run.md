@@ -1,7 +1,7 @@
 ---
 id: "04"
 title: deployability — build to a plain-node-runnable CLI
-status: todo
+status: in-progress
 attempts: 0
 verify: npm test
 spec-paths:
