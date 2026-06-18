@@ -24,12 +24,12 @@ This repo is **under construction, built by the pipeline itself** (dogfood). Cur
 |---|---|---|
 | StateModel types | `src/model.ts` | ✅ done |
 | `parse(.pipeline/) → StateModel` (all business logic) | `src/parse.ts`, `src/frontmatter.ts` | ✅ done, frozen tests green |
-| `render(StateModel) → HTML` | `src/render.ts` | ⛔ NOT implemented (card 02) |
-| CLI `board.html` generation | `src/cli.ts` | ⛔ NOT implemented (card 03) |
+| `render(StateModel) → HTML` | `src/render.ts` | ✅ done |
+| CLI `board.html` generation | `src/cli.ts` | ✅ done |
+| Build/run as plain Node ESM CLI | `package.json`, `tsconfig.json` | ✅ done (`npm run build`, `node dist/cli.js`) |
 
-**Consequence: `board.html` generation is NOT available yet.** Today you can install deps and run the
-frozen parser test suite; you cannot yet produce a board. The "Use / Deploy" sections below describe
-the **intended** interface (marked PLANNED) and will work once cards 02–03 land.
+**Consequence: `board.html` generation is available after building.** Install deps, run the test suite,
+then build and invoke the emitted CLI with plain Node.
 
 ## Quick start (works today)
 
@@ -37,28 +37,32 @@ the **intended** interface (marked PLANNED) and will work once cards 02–03 lan
 git clone https://github.com/jackypanster/pipeline-dashboard
 cd pipeline-dashboard
 npm install        # Node >= 22 (developed on Node 26); npm
-npm test           # runs the frozen parse->StateModel suite (must be green)
+npm test           # runs parser/render/CLI/integration suites (must be green)
+npm run build      # emits dist/cli.js for plain Node
 ```
 
-## Use (PLANNED — available after card 03 lands)
+## Use
 
 ```bash
 # Point it at a LOCAL checkout of any repo that the pipeline operates on.
 # It reads <target>/.pipeline/ and writes a static board.html. Read-only: it never
 # modifies the target.
-node src/cli.ts /path/to/target-repo            # writes ./board.html
-node src/cli.ts /path/to/target-repo --out /tmp/board.html
+npm run build
+node dist/cli.js /path/to/target-repo            # writes ./board.html
+node dist/cli.js /path/to/target-repo --out /tmp/board.html
+npx pipeline-dashboard /path/to/target-repo --out /tmp/board.html
 open board.html                                 # or xdg-open / a browser
 ```
 
 Input is a **local filesystem path** to a target repo checkout (not a git URL — `git pull` the target
 yourself first). Phase 1 renders only the feature named by `<target>/.pipeline/current.json`.
 
-## Deploy (PLANNED)
+## Deploy
 
 It is a generator, not a service — "deploy" = produce `board.html` and serve/open it. No daemon, no DB.
 
-- **On demand**: run the CLI, open the file.
+- **On demand**: run `npm run build`, run `node dist/cli.js <target> [--out file]`, open the file.
+- **As a package binary**: the `pipeline-dashboard` bin maps to `dist/cli.js` after build/install.
 - **Always-fresh**: have a cron (or the pipeline's reviewer cron) re-run the generator after each
   `git pull` of the target, and serve the output dir with any static file server (e.g. caddy/nginx).
 - Rollback is trivial: the only artifact written is the output HTML; delete it.

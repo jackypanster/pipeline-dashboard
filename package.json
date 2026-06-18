@@ -6,13 +6,18 @@
   "description": "Read-only state-machine dashboard for the jackypanster/pipeline skill-aggregation pipeline.",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build": "tsc"
   },
   "devDependencies": {
+    "@types/node": "^25.9.3",
     "typescript": "^5.7.3",
     "vitest": "^3.2.4"
   },
   "allowScripts": {
     "esbuild@0.27.7": true
+  },
+  "bin": {
+    "pipeline-dashboard": "dist/cli.js"
   }
 }
