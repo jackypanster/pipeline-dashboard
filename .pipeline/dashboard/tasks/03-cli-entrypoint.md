@@ -1,7 +1,7 @@
 ---
 id: "03"
 title: cli.ts — local path arg -> board.html
-status: review
+status: done
 attempts: 0
 verify: npm test
 spec-paths:
