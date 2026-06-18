@@ -1,7 +1,7 @@
 {
   "repo": "https://github.com/jackypanster/pipeline-dashboard",
   "branch": "main",
-  "pr": "none",
+  "pr": "https://github.com/jackypanster/pipeline-dashboard/pull/3",
   "feature": "dashboard",
-  "stage": "task"
+  "stage": "impl"
 }
