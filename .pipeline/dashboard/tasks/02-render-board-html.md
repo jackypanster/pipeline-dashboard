@@ -1,7 +1,7 @@
 ---
 id: "02"
 title: render(StateModel) -> board.html (dumb shell)
-status: in-progress
+status: review
 attempts: 0
 verify: npm test
 spec-paths:
