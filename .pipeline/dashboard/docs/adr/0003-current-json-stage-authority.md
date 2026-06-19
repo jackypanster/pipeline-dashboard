@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted.
+**Superseded by [0006](0006-journal-tail-is-stage-authority.md).** The upstream contract made
+`journal.md`'s tail the run-state authority and demoted `current.json.stage` to a cache; the
+dashboard now folds the journal tail and uses `current.json.stage` only as a fallback when no
+journal exists. The "do not infer stage from artifact presence" principle below still holds — we
+read the journal's explicit log, not file presence.
 
 ## Context
 

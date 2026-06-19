@@ -17,9 +17,10 @@ page that renders the pipeline's state so a human (or agent) can triage in 5 sec
 Render **one target repo's current feature** as a single static `board.html` showing the pipeline's
 **two** state machines:
 
-1. **Feature stage flow** — `prd → arch → task → impl → review → done`, highlighting `current.json.stage`
-   (the most-recently-completed stage; `current.json` is the authority — do NOT re-derive stage from
-   artifact presence when it conflicts).
+1. **Feature stage flow** — `prd → arch → task → impl → review → done`, highlighting the current stage.
+   (**Superseded by ADR 0006:** the authority is now the `journal.md` tail; `current.json.stage` is only
+   a fallback cache when no journal exists. The "do NOT re-derive from artifact *presence*" principle
+   still holds — we read the journal's explicit log, not file existence.)
 2. **Card status lanes** — `todo / in-progress / review / done / blocked`, each card showing `id`,
    `title`, `attempts` (red when `>= 3`), and `spec-rev` when present.
 
@@ -70,12 +71,23 @@ interface StateModel {
   branch: string;      // current.json.branch
   pr: string | null;   // current.json.pr (null when "none"/absent)
   feature: string;     // current.json.feature
-  stage: Stage;        // current.json.stage (authority)
+  stage: Stage;        // resolved: journal.md tail (authority), else current.json.stage (fallback) — ADR 0006
   stageOrder: Stage[]; // ["prd","arch","task","impl","review","done"] — fixed
   cards: Card[];       // sorted by id ascending
   lanes: Record<CardStatus, Card[]>;  // cards grouped by status, all 5 keys always present
   warnings: string[];  // non-fatal data issues (see error handling)
+  // --- journal-aware fields (added per ADR 0006; journal is optional) ---
+  journal: JournalEntry[];                      // append-order entries; [] when no journal.md
+  stageSource: "journal" | "current.json";      // which source `stage` was resolved from
+  liveStatus: "completed" | "failed" | "blocked" | "unknown" | null; // tail status; null if no journal
+  nextCommand: string | null;                   // tail handoff's next pipeline command
+  by: string | null;                            // who ran the most recent stage; null if no journal
+  featureBlocked: boolean;                       // feature-level block (tail failed/blocked or →hunt)
+  integrationReports: string[];                  // reviews/integration-NN.md paths (evidence when blocked)
 }
+
+// JournalEntry: { seq, timestamp, from, to, status, by, done, output[], handoff, nextCommand }
+// Tail = last entry in FILE (append) order — NOT max-seq; non-monotonic seq warns, never reorders.
 ```
 
 ## Error / edge handling (these become the freeze-test fixtures)
@@ -108,6 +120,8 @@ interface StateModel {
 3. **Freeze tests = synthetic fixtures** under `test/fixtures/`, not live repo snapshots (deterministic,
    portable, no enterprise-repo access dependency).
 4. **`current.json.stage` is authority** for the stage flow; artifact presence does not override it.
+   (**Superseded by ADR 0006** — the `journal.md` tail is the authority; `current.json.stage` is a
+   fallback cache. Drift between them surfaces as a warning, journal wins.)
 5. **Logic in `parse`, dumb `render`** — concentrate frozen truth in the deterministic core.
 
 ## Deferred to Phase 2 (independent, ships later)

@@ -1,4 +1,4 @@
-import type { Card, CardStatus, StateModel } from "./model.js";
+import type { Card, CardStatus, JournalEntry, StateModel } from "./model.js";
 
 const LANE_ORDER: CardStatus[] = ["todo", "in-progress", "review", "done", "blocked"];
 
@@ -42,6 +42,91 @@ function renderLane(status: CardStatus, cards: Card[]): string {
     <div class="lane__cards">
       ${body}
     </div>
+  </section>`;
+}
+
+function renderLiveBanner(state: StateModel): string {
+  if (state.stageSource !== "journal") {
+    return "";
+  }
+
+  const status = state.liveStatus ?? "unknown";
+  const next = state.nextCommand
+    ? `<span class="live__next">next: <code>${escapeHtml(state.nextCommand)}</code></span>`
+    : `<span class="live__next live__next--end">no next command</span>`;
+  const by = state.by ? `<span class="live__by">by ${escapeHtml(state.by)}</span>` : "";
+
+  return `<section class="live live--${escapeHtml(status)}" aria-label="Live run status">
+    <span class="live__label">live</span>
+    <span class="live__status">${escapeHtml(status)}</span>
+    ${next}
+    ${by}
+    <span class="live__source">stage from journal</span>
+  </section>`;
+}
+
+function renderBlockedBanner(state: StateModel): string {
+  if (!state.featureBlocked) {
+    return "";
+  }
+
+  const reports = state.integrationReports.length > 0
+    ? `<ul class="blocked-banner__reports">${state.integrationReports
+        .map((path) => `<li><code>${escapeHtml(path)}</code></li>`)
+        .join("")}</ul>`
+    : "";
+
+  return `<section class="blocked-banner" role="alert">
+    <h2>Feature blocked</h2>
+    <p>The latest journal entry routes this feature out of the forward flow (failed / blocked / →hunt).
+    Cards may still look green — the feature is not done.</p>
+    ${reports}
+  </section>`;
+}
+
+function renderJournalEntry(entry: JournalEntry, isLive: boolean): string {
+  const liveClass = isLive ? " entry--live" : "";
+  const output = entry.output.length > 0
+    ? `<p class="entry__output"><span>output</span> ${entry.output
+        .map((path) => `<code>${escapeHtml(path)}</code>`)
+        .join(" ")}</p>`
+    : "";
+  const done = entry.done
+    ? `<p class="entry__done">${escapeHtml(entry.done)}</p>`
+    : "";
+  const handoff = entry.handoff
+    ? `<details class="entry__handoff"><summary>handoff</summary><pre>${escapeHtml(entry.handoff)}</pre></details>`
+    : "";
+
+  return `<li class="entry entry--${escapeHtml(entry.status)}${liveClass}" data-seq="${escapeHtml(entry.seq)}">
+    <div class="entry__topline">
+      <span class="entry__seq">seq ${escapeHtml(entry.seq)}</span>
+      <span class="entry__transition"><code>${escapeHtml(entry.from)}</code> → <code>${escapeHtml(entry.to)}</code></span>
+      <span class="entry__status">${escapeHtml(entry.status)}</span>
+      <span class="entry__by">by ${escapeHtml(entry.by)}</span>
+      <span class="entry__time">${escapeHtml(entry.timestamp)}</span>
+    </div>
+    ${done}
+    ${output}
+    ${handoff}
+  </li>`;
+}
+
+function renderTimeline(state: StateModel): string {
+  if (state.journal.length === 0) {
+    return "";
+  }
+
+  // The live entry is the physically-last (append order), identified by index — NOT by max
+  // seq: the parser allows non-monotonic/duplicate seq, so seq is not a unique live key.
+  const lastIndex = state.journal.length - 1;
+  const entries = state.journal
+    .map((entry, index) => renderJournalEntry(entry, index === lastIndex))
+    .join("\n");
+
+  return `<section class="timeline" aria-label="Run journal">
+    <h2>Run journal</h2>
+    <ol class="timeline__list">${entries}</ol>
   </section>`;
 }
 
@@ -122,6 +207,33 @@ export function renderBoard(state: StateModel): string {
     .card h3 { margin: .45rem 0 .7rem; font-size: 1rem; line-height: 1.35; }
     .card__meta { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; }
     code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .live { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; padding: .7rem 1rem; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 12px; background: var(--panel); }
+    .live__label { text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; color: var(--muted); }
+    .live__status { font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+    .live--failed, .live--blocked { border-left-color: var(--blocked); }
+    .live--failed .live__status, .live--blocked .live__status { color: var(--blocked); }
+    .live__next, .live__by, .live__source { color: var(--muted); font-size: .9rem; }
+    .live__source { margin-left: auto; font-size: .75rem; }
+    .blocked-banner { border: 1px solid var(--blocked); border-radius: 16px; background: var(--blocked-bg); color: var(--text); padding: 1rem 1.25rem; margin: 1rem 0; box-shadow: 0 10px 30px rgb(180 35 24 / 12%); }
+    .blocked-banner h2 { color: var(--blocked); margin: 0 0 .4rem; }
+    .blocked-banner p { margin: 0; color: var(--muted); }
+    .blocked-banner__reports { margin: .6rem 0 0; }
+    .timeline { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 30px rgb(15 23 42 / 8%); margin: 1rem 0; padding: 1rem 1.25rem; }
+    .timeline h2 { margin: 0 0 .75rem; font-size: 1rem; text-transform: uppercase; letter-spacing: .04em; }
+    .timeline__list { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+    .entry { border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 12px; padding: .7rem .85rem; background: var(--bg); }
+    .entry--live { border-left-color: var(--accent); }
+    .entry--failed, .entry--blocked { border-left-color: var(--blocked); }
+    .entry__topline { display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem; color: var(--muted); font-size: .85rem; }
+    .entry__seq { font-weight: 700; color: var(--text); }
+    .entry__status { text-transform: uppercase; letter-spacing: .03em; }
+    .entry--failed .entry__status, .entry--blocked .entry__status { color: var(--blocked); font-weight: 700; }
+    .entry__time { margin-left: auto; }
+    .entry__done { margin: .5rem 0 0; }
+    .entry__output { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; }
+    .entry__handoff { margin-top: .5rem; }
+    .entry__handoff summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
+    .entry__handoff pre { margin: .5rem 0 0; padding: .7rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font-size: .82rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
   </style>
 </head>
 <body>
@@ -136,6 +248,8 @@ export function renderBoard(state: StateModel): string {
         <span>pr: ${escapeHtml(pr)}</span>
       </div>
     </section>
+    ${renderLiveBanner(state)}
+    ${renderBlockedBanner(state)}
     ${warnings}
     <nav class="stage-flow" aria-label="Feature stage flow">
       <ol>${stages}</ol>
@@ -143,6 +257,7 @@ export function renderBoard(state: StateModel): string {
     <section class="lanes" aria-label="Card status lanes">
       ${lanes}
     </section>
+    ${renderTimeline(state)}
   </main>
 </body>
 </html>`;
