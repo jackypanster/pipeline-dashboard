@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // VALUE import of the not-yet-implemented renderer — freezes RED until card 02 impl creates
 // src/render.ts. Type-only import is erased by esbuild and stays safe pre-impl.
 import { renderBoard } from "../src/render.js";
-import type { Card, CardStatus, StateModel } from "../src/model.js";
+import type { Card, CardStatus, JournalEntry, StateModel } from "../src/model.js";
 
 const CARD_STATUSES: CardStatus[] = ["todo", "in-progress", "review", "done", "blocked"];
 const STAGE_ORDER = ["prd", "arch", "task", "impl", "review", "done"] as const;
@@ -43,6 +43,44 @@ function sampleModel(): StateModel {
       blocked: [cards[3]!],
     },
     warnings: ["sample warning: heads up"],
+    journal: [],
+    stageSource: "current.json",
+    liveStatus: null,
+    nextCommand: null,
+    by: null,
+    featureBlocked: false,
+    integrationReports: [],
+  };
+}
+
+function entry(partial: Partial<JournalEntry> & Pick<JournalEntry, "seq">): JournalEntry {
+  return {
+    timestamp: "2026-06-18T09:00:00Z",
+    from: "task",
+    to: "impl",
+    status: "completed",
+    by: "claude-opus-4-8",
+    done: "did the thing",
+    output: [".pipeline/login/tasks/01.md"],
+    handoff: "Run pipeline-impl.",
+    nextCommand: "pipeline-impl",
+    ...partial,
+  };
+}
+
+// A journal-aware model: stage resolved from the journal tail, a live banner, a timeline.
+function journalModel(): StateModel {
+  const base = sampleModel();
+  return {
+    ...base,
+    stageSource: "journal",
+    liveStatus: "completed",
+    nextCommand: "pipeline-review",
+    by: "gemini-2.5-pro",
+    journal: [
+      entry({ seq: 1, from: "prd", to: "arch" }),
+      entry({ seq: 2, from: "arch", to: "task", by: "gemini-2.5-pro", nextCommand: "pipeline-review" }),
+    ],
   };
 }
 
@@ -100,5 +138,38 @@ describe("renderBoard — escaping", () => {
     const html = renderBoard(sampleModel());
     expect(html).not.toContain("<script>alert('x')</script>");
     expect(html).toContain("&lt;script&gt;");
+  });
+});
+
+describe("renderBoard — journal-aware sections", () => {
+  it("omits the timeline and live banner when there is no journal", () => {
+    const html = renderBoard(sampleModel());
+    expect(html).not.toContain('class="timeline"');
+    expect(html).not.toContain('aria-label="Live run status"');
+  });
+
+  it("renders a timeline with one item per journal entry when journal present", () => {
+    const html = renderBoard(journalModel());
+    expect(html).toContain('aria-label="Run journal"');
+    expect(html).toContain('data-seq="1"');
+    expect(html).toContain('data-seq="2"');
+  });
+
+  it("renders a live banner showing the tail's next command and runner", () => {
+    const html = renderBoard(journalModel());
+    expect(html).toContain('aria-label="Live run status"');
+    expect(html).toContain("pipeline-review");
+    expect(html).toContain("gemini-2.5-pro");
+  });
+
+  it("renders a blocked banner with integration report paths when featureBlocked", () => {
+    const blocked: StateModel = {
+      ...journalModel(),
+      featureBlocked: true,
+      integrationReports: ["reviews/integration-01.md"],
+    };
+    const html = renderBoard(blocked);
+    expect(html).toContain('class="blocked-banner"');
+    expect(html).toContain("reviews/integration-01.md");
   });
 });

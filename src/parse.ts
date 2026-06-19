@@ -2,11 +2,13 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 
 import { firstHeading, parseFrontmatter } from "./frontmatter.js";
+import { parseJournal } from "./journal.js";
 import {
   CARD_STATUSES,
   STAGE_ORDER,
   type Card,
   type CardStatus,
+  type JournalEntry,
   type Stage,
   type StateModel,
 } from "./model.js";
@@ -43,7 +45,7 @@ export function parsePipeline(pipelineDir: string): StateModel {
   const repo = stringValue(current.repo);
   const branch = stringValue(current.branch);
   const feature = stringValue(current.feature);
-  const stage = parseStage(current.stage, warnings);
+  const cacheStage = parseStage(current.stage, warnings);
   const pr = parsePr(current.pr);
 
   if (!feature) {
@@ -51,23 +53,33 @@ export function parsePipeline(pipelineDir: string): StateModel {
   }
 
   const cards: Card[] = [];
+  let journal: JournalEntry[] = [];
+  let integrationReports: string[] = [];
   const featureDir = join(pipelineDir, feature);
   const tasksDir = join(featureDir, "tasks");
 
   if (!existsSync(featureDir) || !safeIsDirectory(featureDir)) {
     warnings.push(`feature directory not found: ${feature}`);
-  } else if (!existsSync(tasksDir) || !safeIsDirectory(tasksDir)) {
-    warnings.push(`tasks directory not found for feature: ${feature}`);
   } else {
-    for (const fileName of sortedMarkdownFiles(tasksDir)) {
-      const card = parseCardFile(join(tasksDir, fileName), fileName, warnings);
-      if (card) {
-        cards.push(card);
+    if (!existsSync(tasksDir) || !safeIsDirectory(tasksDir)) {
+      warnings.push(`tasks directory not found for feature: ${feature}`);
+    } else {
+      for (const fileName of sortedMarkdownFiles(tasksDir)) {
+        const card = parseCardFile(join(tasksDir, fileName), fileName, warnings);
+        if (card) {
+          cards.push(card);
+        }
       }
     }
+
+    journal = readJournal(featureDir, warnings);
+    integrationReports = findIntegrationReports(featureDir);
   }
 
   cards.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+
+  const { stage, stageSource } = resolveStage(journal, cacheStage, warnings);
+  const tail = journal.at(-1) ?? null;
 
   return {
     repo,
@@ -79,7 +91,86 @@ export function parsePipeline(pipelineDir: string): StateModel {
     cards,
     lanes: groupLanes(cards),
     warnings,
+    journal,
+    stageSource,
+    liveStatus: tail ? tail.status : null,
+    nextCommand: tail ? tail.nextCommand : null,
+    by: tail ? tail.by : null,
+    featureBlocked: computeFeatureBlocked(tail),
+    integrationReports,
   };
+}
+
+function readJournal(featureDir: string, warnings: string[]): JournalEntry[] {
+  const journalPath = join(featureDir, "journal.md");
+  if (!existsSync(journalPath)) {
+    warnings.push("no journal.md: stage and live status derived from current.json cache");
+    return [];
+  }
+
+  let content: string;
+  try {
+    content = readFileSync(journalPath, "utf8");
+  } catch (error) {
+    warnings.push(`could not read journal.md: ${messageFrom(error)}`);
+    return [];
+  }
+
+  return parseJournal(content, warnings);
+}
+
+function findIntegrationReports(featureDir: string): string[] {
+  const reviewsDir = join(featureDir, "reviews");
+  if (!existsSync(reviewsDir) || !safeIsDirectory(reviewsDir)) {
+    return [];
+  }
+
+  return readdirSync(reviewsDir)
+    .filter((fileName) => /^integration-.*\.md$/i.test(fileName))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map((fileName) => join("reviews", fileName));
+}
+
+/**
+ * CONTRACT: the journal tail is the live-state authority; current.json.stage is only a
+ * fast cache. When they disagree the journal wins and we surface a drift warning. With no
+ * journal we fall back to the cache (pre-journal features and the dashboard's own repo).
+ */
+function resolveStage(
+  journal: JournalEntry[],
+  cacheStage: Stage,
+  warnings: string[],
+): { stage: Stage; stageSource: "journal" | "current.json" } {
+  const tail = journal.at(-1);
+  if (!tail) {
+    return { stage: cacheStage, stageSource: "current.json" };
+  }
+
+  let candidate: Stage;
+  if (isStage(tail.to)) {
+    candidate = tail.to;
+  } else if (isStage(tail.from)) {
+    // tail.to is a routing target (hunt/todo/…), not a forward stage; the feature sits
+    // at the stage it bounced from — featureBlocked carries the "in hunt/retry" meaning.
+    candidate = tail.from;
+  } else {
+    candidate = cacheStage;
+  }
+
+  if (candidate !== cacheStage) {
+    warnings.push(
+      `stage drift: current.json=${cacheStage}, journal=${candidate} (journal tail wins)`,
+    );
+  }
+
+  return { stage: candidate, stageSource: "journal" };
+}
+
+function computeFeatureBlocked(tail: JournalEntry | null): boolean {
+  if (!tail) {
+    return false;
+  }
+  return tail.status === "failed" || tail.status === "blocked" || tail.to === "hunt";
 }
 
 function parseCardFile(path: string, fileName: string, warnings: string[]): Card | null {
@@ -125,6 +216,13 @@ function emptyState(warnings: string[] = []): StateModel {
     cards: [],
     lanes: emptyLanes(),
     warnings,
+    journal: [],
+    stageSource: "current.json",
+    liveStatus: null,
+    nextCommand: null,
+    by: null,
+    featureBlocked: false,
+    integrationReports: [],
   };
 }
 

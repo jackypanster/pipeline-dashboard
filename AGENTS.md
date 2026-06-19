@@ -10,9 +10,16 @@
 git+md state bus (the state produced by [`jackypanster/pipeline`](https://github.com/jackypanster/pipeline))
 and renders it as a single `board.html` showing two state machines:
 
-1. **Feature stage flow** — `prd → arch → task → impl → review → done` (from `current.json.stage`).
+1. **Feature stage flow** — `prd → arch → task → impl → review → done` (from the `journal.md` tail,
+   falling back to `current.json.stage` when no journal exists).
 2. **Card status lanes** — `todo / in-progress / review / done / blocked` (from card frontmatter,
    with `attempts` and `spec-rev`).
+3. **Run journal timeline** — every stage transition (`seq`, `from→to`, status, `by=<LLM/bot>`,
+   handoff) from `journal.md`. A feature-level **blocked** banner appears when the journal *tail*
+   routes the feature out of the forward flow (`failed`/`blocked`/`→hunt`); **when blocked**, any
+   `reviews/integration-NN.md` incident report is surfaced as evidence. (The tail is the authority,
+   not file presence — an incident report is append-only and survives recovery, so a feature that
+   later reaches `done` is correctly *not* shown blocked even though the report still exists.)
 
 No server, no database, no write actions. It never writes into the observed `.pipeline/`.
 
@@ -99,4 +106,7 @@ out of band.
 - **Only `pipeline-review` merges, and only after explicit human confirmation.** Never auto-merge.
 - **Stay in your stage's write-set** (see `CONTRACT.md`). Metadata (`.pipeline/**`) goes to trunk;
   reviewed code goes on a `feat/<feature>` branch via PR.
-- `current.json.stage` is the stage authority — do not infer stage from artifact presence.
+- **The `journal.md` tail is the run-state authority** (per the contract); `current.json.stage` is a
+  fast cache used only as a fallback when no journal exists. On disagreement the journal wins and the
+  board warns. Do not infer stage from artifact *presence* — read the journal's explicit log. (See
+  ADR 0006, superseding 0003.)

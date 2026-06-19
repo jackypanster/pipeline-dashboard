@@ -5,17 +5,21 @@ cards, tests, implementation, and review comments.
 
 ## `current.json`
 
-The authoritative pointer at `.pipeline/current.json`.
+The fast bootstrap pointer at `.pipeline/current.json`. It is a **cache**, not the run-state
+authority (see Journal). It still authoritatively names the active `feature` (the single
+in-flight pointer).
 
-Fields used by Phase 1:
+Fields used by the dashboard:
 
 - `repo`: target repo URL for display/context.
 - `branch`: target branch for display/context.
 - `pr`: PR marker; `"none"` or absent becomes `null` in `StateModel`.
-- `feature`: the only feature directory read by Phase 1.
-- `stage`: the feature-stage authority.
+- `feature`: the only feature directory read (the active-feature authority).
+- `stage`: a **fallback cache** for the feature stage — used only when no `journal.md` exists.
+  When a journal exists its tail wins; a disagreement surfaces as a `stage drift` warning.
 
-Do not infer the current feature or stage by scanning artifacts.
+Do not infer the current feature by scanning artifacts. Do not infer the stage from artifact
+*presence* — read the journal's explicit log (ADR 0006, superseding 0003).
 
 ## Feature
 
@@ -32,8 +36,30 @@ The feature-level pipeline state machine:
 prd -> arch -> task -> impl -> review -> done
 ```
 
-`current.json.stage` names the most recently completed stage and is the display authority for the
-stage flow. File presence does not override it.
+The **authority is the `journal.md` tail** (its `to-stage`, with `from-stage` fallback when the tail
+routed to a non-forward target like `hunt`/`todo`). `current.json.stage` is only a fallback cache used
+when no journal exists; on disagreement the journal wins and the parser emits a `stage drift` warning.
+File presence never overrides either source.
+
+## Journal (run-state authority)
+
+The append-only run log at `.pipeline/<feature>/journal.md`, one entry per completed stage. Per the
+upstream `CONTRACT.md`, its **physically-last entry (the tail) is the authoritative live position** —
+not `current.json`. Each entry carries `seq · timestamp · from→to · status · by=<bot/LLM> · done ·
+output · handoff`.
+
+The parser preserves **file (append) order** — the tail is the last appended entry, never the
+max-`seq` entry; a non-monotonic `seq` is flagged with a warning, not silently reordered. From the
+tail it derives `stage`, `nextCommand`, `liveStatus`, and `by`. The journal is **optional**: malformed
+entries are skipped with a warning, and a missing journal degrades to the `current.json` cache.
+
+## Feature blocked
+
+A feature-level (not card-level) block, derived from the journal tail only: tail `status` is
+`failed`/`blocked`, or its transition is `→hunt`. A `reviews/integration-NN.md` incident report is
+append-only evidence shown **when** the feature is blocked — its mere presence does **not** trigger a
+block (a recovered feature whose tail reaches `done` is correctly not blocked despite the lingering
+report).
 
 ## Status
 

@@ -9,6 +9,11 @@ operator or cold agent can see pipeline state quickly without hand-reading metad
 The architecture formalizes the PRD's already-frozen `StateModel` contract. It does **not** redesign
 that shape.
 
+> **Superseded in part by ADR 0006.** Statements below that name `current.json.stage` as the
+> stage/feature-state authority are out of date: the `journal.md` tail is now the authority and
+> `current.json.stage` is only a fallback cache (drift surfaces as a warning, journal wins). The
+> `StateModel` gained journal-derived fields. The "logic in parse, dumb render" law is unchanged.
+
 ## Design constraints
 
 - Input is a **local filesystem path** to a target repo checkout.
