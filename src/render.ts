@@ -113,14 +113,15 @@ function renderJournalEntry(entry: JournalEntry, isLive: boolean): string {
 }
 
 function renderTimeline(state: StateModel): string {
-  const tail = state.journal.at(-1);
-  if (!tail) {
+  if (state.journal.length === 0) {
     return "";
   }
 
-  const lastSeq = tail.seq;
+  // The live entry is the physically-last (append order), identified by index — NOT by max
+  // seq: the parser allows non-monotonic/duplicate seq, so seq is not a unique live key.
+  const lastIndex = state.journal.length - 1;
   const entries = state.journal
-    .map((entry) => renderJournalEntry(entry, entry.seq === lastSeq))
+    .map((entry, index) => renderJournalEntry(entry, index === lastIndex))
     .join("\n");
 
   return `<section class="timeline" aria-label="Run journal">

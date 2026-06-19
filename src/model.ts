@@ -46,7 +46,7 @@ export interface StateModel {
   lanes: Record<CardStatus, Card[]>;
   warnings: string[];
   // --- journal-aware projection (CONTRACT: journal tail is the authority) ---
-  journal: JournalEntry[];                       // seq ascending; [] when no journal.md
+  journal: JournalEntry[];                       // append/file order (tail = last); [] when no journal.md
   stageSource: "journal" | "current.json";       // which source `stage` was resolved from
   liveStatus: JournalStatus | null;              // tail entry status; null when no journal
   nextCommand: string | null;                    // tail handoff's next pipeline command

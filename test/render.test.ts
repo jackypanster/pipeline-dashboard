@@ -162,6 +162,24 @@ describe("renderBoard — journal-aware sections", () => {
     expect(html).toContain("gemini-2.5-pro");
   });
 
+  it("marks only the physically-last entry live even when seq is duplicated", () => {
+    // parser allows non-monotonic/duplicate seq (append order is the authority); the live
+    // marker must follow index, not seq, or duplicates would all be flagged live.
+    const model: StateModel = {
+      ...sampleModel(),
+      stageSource: "journal",
+      liveStatus: "completed",
+      journal: [
+        entry({ seq: 1, from: "a", to: "b" }),
+        entry({ seq: 1, from: "c", to: "d" }),
+      ],
+    };
+    const html = renderBoard(model);
+    // count the class-attribute usage only (the trailing quote excludes the CSS `.entry--live` rule)
+    const liveCount = (html.match(/entry--live"/g) ?? []).length;
+    expect(liveCount).toBe(1);
+  });
+
   it("renders a blocked banner with integration report paths when featureBlocked", () => {
     const blocked: StateModel = {
       ...journalModel(),
