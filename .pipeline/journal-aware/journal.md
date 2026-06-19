@@ -94,3 +94,11 @@ output: https://github.com/jackypanster/pipeline-dashboard/pull/5
 >>> NEXT
 Run pipeline-review to squash-merge AFTER explicit human confirm (only-reviewer-merges). On merge: stage→done.
 <<< END
+
+## seq=12 · 2026-06-19T18:20:00Z · review→done · completed · by=check
+done:   human confirmed; squash-merged PR #5 into main as 4985235. Feature complete; stage→done. The dashboard now renders journal-aware projection (incl. its own run).
+output: https://github.com/jackypanster/pipeline-dashboard/commit/4985235
+--- handoff ---
+>>> NEXT
+Feature complete — no next stage. Pipeline idle until the next pipeline-prd.
+<<< END
