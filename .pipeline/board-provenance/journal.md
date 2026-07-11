@@ -72,3 +72,14 @@ Feature gotchas (project-specific traps the next node MUST know):
   - parse/model/journal/frontmatter must retain zero product diff; the frozen provenance spec must remain untouched.
 Done when: the exact npm-link hand check creates /tmp/b.html, full verification is green, and PR #6 is updated. On success: card 01 → review, then run pipeline-review. On failure: attempts++; >=3 ⇒ blocked ⇒ run pipeline-hunt.
 <<< END
+
+## seq=6 · 2026-07-11T06:43:00Z · impl→review · completed · by=grok-4-5
+done:   review-01 fix — isMainModule() realpath-compares argv[1] vs import.meta.url so npm bin symlink invokes run(); npm-link hand check writes /tmp/b.html with provenance footer; 54/54 green; PR #6 updated (0927103).
+output: src/cli.ts
+--- handoff ---
+>>> NEXT
+Run pipeline-review.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/board-provenance pr=https://github.com/jackypanster/pipeline-dashboard/pull/6 card=01
+Your task: re-review PR #6 after the symlink-safe entrypoint fix. Freeze gate still applies (test/provenance.spec.test.ts untouched). Full-verify `npm run build && npm test` green. **Required hand check:** `npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html` and assert the file exists with provenance footer; then clean up the link. Only merge after explicit human confirmation.
+Feature gotchas: the failure was only via npm's symlinked bin path; direct dist/cli.js exec was always fine. Preserve realpath guard.
+<<< END
