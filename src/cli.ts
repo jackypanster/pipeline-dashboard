@@ -1,13 +1,17 @@
+#!/usr/bin/env node
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parsePipeline } from "./parse.js";
+import { collectProvenance } from "./provenance.js";
 import { renderBoard } from "./render.js";
 
 export function buildBoard(targetRepoPath: string): string {
   const state = parsePipeline(join(targetRepoPath, ".pipeline"));
-  return renderBoard(state);
+  // Clock at the shell edge — inject so provenance stays a pure data object for render.
+  const provenance = collectProvenance(targetRepoPath, new Date());
+  return renderBoard(state, provenance);
 }
 
 export function run(args: string[]): number {

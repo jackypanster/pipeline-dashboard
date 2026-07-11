@@ -1,4 +1,5 @@
 import type { Card, CardStatus, JournalEntry, StateModel } from "./model.js";
+import type { Provenance } from "./provenance.js";
 
 const LANE_ORDER: CardStatus[] = ["todo", "in-progress", "review", "done", "blocked"];
 
@@ -130,7 +131,28 @@ function renderTimeline(state: StateModel): string {
   </section>`;
 }
 
-export function renderBoard(state: StateModel): string {
+/**
+ * Format the human-frozen provenance footer line (PRD Success-1).
+ * Separator is " · " (U+00B7). head:null omits the HEAD segment;
+ * branch:null renders "(detached)".
+ */
+function formatProvenanceLine(provenance: Provenance): string {
+  let line = `generated ${provenance.generatedAt} · source ${provenance.source}`;
+  if (provenance.head) {
+    const branchLabel = provenance.head.branch ?? "detached";
+    line += ` · HEAD ${provenance.head.sha} (${branchLabel})`;
+  }
+  return line;
+}
+
+function renderProvenanceFooter(provenance: Provenance | undefined): string {
+  if (!provenance) {
+    return "";
+  }
+  return `<footer class="provenance">${escapeHtml(formatProvenanceLine(provenance))}</footer>`;
+}
+
+export function renderBoard(state: StateModel, provenance?: Provenance): string {
   const warnings = state.warnings.length > 0
     ? `<section class="warnings" aria-label="Warnings">
         <h2>Warnings</h2>
@@ -146,6 +168,7 @@ export function renderBoard(state: StateModel): string {
 
   const lanes = LANE_ORDER.map((status) => renderLane(status, state.lanes[status] ?? [])).join("\n");
   const pr = state.pr ?? "none";
+  const provenanceFooter = renderProvenanceFooter(provenance);
 
   return `<!doctype html>
 <html lang="en">
@@ -234,6 +257,7 @@ export function renderBoard(state: StateModel): string {
     .entry__handoff { margin-top: .5rem; }
     .entry__handoff summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     .entry__handoff pre { margin: .5rem 0 0; padding: .7rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font-size: .82rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+    .provenance { margin-top: 1.5rem; padding-top: .75rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -258,6 +282,7 @@ export function renderBoard(state: StateModel): string {
       ${lanes}
     </section>
     ${renderTimeline(state)}
+    ${provenanceFooter}
   </main>
 </body>
 </html>`;
