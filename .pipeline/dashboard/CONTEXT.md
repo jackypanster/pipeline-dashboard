@@ -16,7 +16,10 @@ Fields used by the dashboard:
 - `pr`: PR marker; `"none"` or absent becomes `null` in `StateModel`.
 - `feature`: the only feature directory read (the active-feature authority).
 - `stage`: a **fallback cache** for the feature stage — used only when no `journal.md` exists.
-  When a journal exists its tail wins; a disagreement surfaces as a `stage drift` warning.
+  When a journal exists its tail wins. Compliant shims may leave this cache at EITHER valid-Stage
+  end of the tail transition (most-recently-completed = `from`; rejection/terminal states = `to`);
+  a `stage drift` warning fires only when the cache matches **neither** end — a genuinely stale or
+  hand-edited cache (ADR 0008).
 
 Do not infer the current feature by scanning artifacts. Do not infer the stage from artifact
 *presence* — read the journal's explicit log (ADR 0006, superseding 0003).
@@ -38,8 +41,10 @@ prd -> arch -> task -> impl -> review -> done
 
 The **authority is the `journal.md` tail** (its `to-stage`, with `from-stage` fallback when the tail
 routed to a non-forward target like `hunt`/`todo`). `current.json.stage` is only a fallback cache used
-when no journal exists; on disagreement the journal wins and the parser emits a `stage drift` warning.
-File presence never overrides either source.
+when no journal exists. Drift detection and display answer different questions: the board always
+displays the tail-derived stage, while a `stage drift` warning fires only when the cache matches
+neither valid-Stage end of the tail transition (`cache ∉ {tail.from, tail.to}`) — matching either end
+is compliant shim behavior (ADR 0008). File presence never overrides either source.
 
 ## Journal (run-state authority)
 
