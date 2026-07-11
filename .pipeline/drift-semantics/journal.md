@@ -71,3 +71,11 @@ Feature gotchas (project-specific traps the next node MUST know):
   - Merge is incomplete until PR merge, branch deletion, card→done, current.json→done, final journal entry, metadata commit, and push all succeed.
 Done when: PR #7 is squash-merged only after explicit human confirmation and all terminal metadata is pushed. On failure: do not claim done; record the exact blocker.
 <<< END
+
+## seq=6 · 2026-07-11T10:51:11Z · review→done · completed · by=claude-fable-5
+done:   human confirmed ("approve"); PR #7 squash-merged into main as d25d795, feat/drift-semantics deleted. Post-merge full-verify 60/60 green; live smoke on this repo renders ZERO drift warnings — the false-positive class is dead. Card 01 done; feature complete.
+output: https://github.com/jackypanster/pipeline-dashboard/commit/d25d795
+--- handoff ---
+>>> NEXT
+Feature complete — no next stage. Pipeline idle until the next pipeline-prd. Optional follow-up recorded in PRD Non-scope: a one-sentence CONTRACT.md clarification upstream via pipeline-improve (different repo, gated path).
+<<< END
