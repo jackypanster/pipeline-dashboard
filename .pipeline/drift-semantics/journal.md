@@ -21,3 +21,14 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=none
 Your task: read PRD.md + arch.md (same dir). Likely ONE card — a single predicate swap + fixture/test re-freeze is one landable unit. This is a RE-FREEZE of journal-aware's spec surface: the freeze commit must contain the restructured test/journal.test.ts drift describe + the 3 new fixture dirs + the modified journal-drift fixture (per arch.md class table), and its sha becomes the new spec-rev. The red state = restructured tests FAIL against current parse.ts (journal-cache-from expects no drift but current code warns). Everything outside the drift describe must stay untouched.
 Feature gotchas: verbatim pre-check the restructured spec (stub nothing — parse.ts exists; red must be ASSERTION-level, not resolution-level); journal-happy stays byte-identical; keep the malformed/blocked/parseJournal unit suites untouched; verify command should filter to journal tests; the board rendered mid-flight still shows the old false warning until impl lands.
 <<< END
+
+## seq=3 · 2026-07-11T07:33:40Z · task→impl · completed · by=claude-fable-5
+done:   ONE card frozen — 01 drift predicate (membership over tail transition). Spec re-freeze: journal.test.ts +43 lines (new ADR 0008 describe, 6 its; old drift test byte-identical, its fixture redefined to cache=prd), 3 new fixture dirs (journal-cache-from = old drift content verbatim, journal-rejection, journal-tail-nonstage). Red = exactly ONE assertion (cache==from must not warn — the bug); 59/60 suite-wide, zero cross-file fallout. spec-rev=bc59f1d (supersedes f5e6a49 for journal.test.ts).
+output: test/journal.test.ts, test/fixtures/journal-*, .pipeline/drift-semantics/tasks/01-drift-predicate.md
+--- handoff ---
+>>> NEXT
+Run pipeline-impl.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=none card=01
+Your task: branch feat/drift-semantics off main; make `npm run build && npm test -- journal` green by swapping ONLY the drift predicate inside resolveStage (src/parse.ts:139-167) per the card + ADR 0008: members = [tail.from, tail.to].filter(isStage); warn ⇔ members non-empty ∧ cache ∉ members. Keep display-candidate selection, stageSource, and the warning message text EXACTLY unchanged. Then full-verify `npm run build && npm test` (60 tests) green. Open a PR to main. NEVER touch spec-paths (test/journal.test.ts + the four journal fixtures, spec-rev=bc59f1d) nor src/model.ts, src/journal.ts, src/frontmatter.ts, src/render.ts, src/cli.ts, src/provenance.ts.
+Feature gotchas: expected product diff is a handful of lines in ONE function — anything more is scope creep; the 16 green journal tests are regression pins, if one turns red your change is wrong; after green, rendering THIS repo (cache=task, tail task→impl) must show no drift warning — a good live smoke check.
+<<< END

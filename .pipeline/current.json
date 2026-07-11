@@ -3,7 +3,7 @@
   "branch": "main",
   "pr": "none",
   "feature": "drift-semantics",
-  "stage": "arch",
+  "stage": "task",
   "full-verify": [
     "npm run build",
     "npm test"
