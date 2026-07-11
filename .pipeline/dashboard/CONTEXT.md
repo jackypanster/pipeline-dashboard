@@ -163,3 +163,16 @@ The parser returns a valid empty `StateModel` with a warning such as `"no active
 still emits a usable `board.html`.
 
 This repo currently has no task card yet, so empty lanes are a normal bootstrap state.
+
+## Provenance (footer)
+
+The render-time stamp `generated <ISO-UTC> · source <abs path> · HEAD <short-sha> (<branch>)` at
+the bottom of `board.html`, answering "when was this board generated, from which checkout state" —
+a stale board must not be indistinguishable from a fresh one.
+
+Provenance is **not** part of `StateModel` and never enters the freeze surface: it describes the
+act of observing (wall clock + the observed repo's git HEAD), not `.pipeline/` content. It is
+collected in the shell (`src/provenance.ts`; clock injected, read-only `git rev-parse` via
+`execFileSync`) and passed to `renderBoard` as an optional argument — the renderer stays dumb
+(ADR 0004, ADR 0007). A non-git or git-less environment degrades by omitting the HEAD segment;
+detached HEAD renders `(detached)`.

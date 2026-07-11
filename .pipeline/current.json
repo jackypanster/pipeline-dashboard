@@ -3,6 +3,6 @@
   "branch": "main",
   "pr": "none",
   "feature": "board-provenance",
-  "stage": "prd",
+  "stage": "arch",
   "full-verify": ["npm run build", "npm test"]
 }
