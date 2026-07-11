@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -56,6 +56,23 @@ function isInsidePipelineDir(targetRepoPath: string, outPath: string): boolean {
   return relativeOut === "" || (!relativeOut.startsWith("..") && !relativeOut.startsWith("/"));
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+/**
+ * True when this module is the process entrypoint.
+ * Resolve both sides through realpath so npm's bin symlink
+ * (`…/bin/pipeline-dashboard` → `dist/cli.js`) still matches import.meta.url.
+ */
+function isMainModule(): boolean {
+  const entry = process.argv[1];
+  if (!entry) {
+    return false;
+  }
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
   process.exitCode = run(process.argv.slice(2));
 }
