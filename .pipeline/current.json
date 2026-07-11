@@ -3,7 +3,7 @@
   "branch": "main",
   "pr": "https://github.com/jackypanster/pipeline-dashboard/pull/6",
   "feature": "board-provenance",
-  "stage": "impl",
+  "stage": "review",
   "full-verify": [
     "npm run build",
     "npm test"

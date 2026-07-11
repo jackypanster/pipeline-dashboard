@@ -83,3 +83,31 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/board-proven
 Your task: re-review PR #6 after the symlink-safe entrypoint fix. Freeze gate still applies (test/provenance.spec.test.ts untouched). Full-verify `npm run build && npm test` green. **Required hand check:** `npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html` and assert the file exists with provenance footer; then clean up the link. Only merge after explicit human confirmation.
 Feature gotchas: the failure was only via npm's symlinked bin path; direct dist/cli.js exec was always fine. Preserve realpath guard.
 <<< END
+
+## seq=7 · 2026-07-11T06:45:52Z · review→review · completed · by=codex-gpt-5
+done:   review verdict approved at PR head 0927103; freeze/boundary gates passed, 54/54 full verify green, and npm-link UX created /tmp/b.html with a valid provenance footer; awaiting explicit human merge confirmation.
+output: .pipeline/board-provenance/reviews/review-02.md
+--- handoff ---
+>>> NEXT
+Resume pipeline-review only after the human explicitly confirms merging PR #6.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/board-provenance pr=https://github.com/jackypanster/pipeline-dashboard/pull/6 card=01
+Model: frontier SOTA required — operator assigns the bot; the pipeline can't verify the model.
+First: git pull --rebase; load repo config (.env if present, per CONTRACT step 2).
+Read for context (before acting):
+  - AGENTS.md — repo-wide project conventions
+  - .pipeline/board-provenance/PRD.md — what
+  - .pipeline/board-provenance/arch.md — how / component boundaries / data flow
+  - .pipeline/board-provenance/tasks/01-provenance-footer.md — card 01, status review
+  - .pipeline/board-provenance/reviews/review-02.md — approved verdict and verification evidence
+  - .pipeline/board-provenance/journal.md — authoritative tail
+Your task (concrete, numbered):
+  1. Require an explicit human confirmation to merge PR #6; without it, stop and ask.
+  2. Re-read PR #6 and ensure its head is still 092710398361480291075758d8a4ea9216c6c89d, card 01 is review, and required checks remain green. If the head changed, re-run review gates before merging.
+  3. On confirmation, squash-merge PR #6 through GitHub and delete the merged feature branch; never perform a local non-PR merge.
+  4. After the merge, set card 01 status to done and .pipeline/current.json stage to done; append the final review→done journal entry, commit all metadata once, and push main.
+Feature gotchas (project-specific traps the next node MUST know):
+  - The npm-link-only entrypoint defect is fixed by realpath comparison and was hand-verified; direct dist execution also remains green.
+  - Preserve the frozen test at spec-rev 99ac7e1 and the zero-diff parse/model/journal/frontmatter product boundary.
+  - Merge is not complete until PR merge, card→done, current.json→done, final journal entry, metadata commit, and push all succeed.
+Done when: PR #6 is squash-merged only after explicit human confirmation, card 01 and current.json are done, the final journal entry is pushed, and the feature branch is deleted. On failure: do not claim done; record the exact blocker.
+<<< END
