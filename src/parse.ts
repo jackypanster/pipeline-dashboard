@@ -157,7 +157,10 @@ function resolveStage(
     candidate = cacheStage;
   }
 
-  if (candidate !== cacheStage) {
+  // ADR 0008: drift ⇔ cache matches neither valid-Stage end of the tail transition.
+  // Compliant cache is most-recently-completed (= tail.from) or rejection/terminal (= tail.to).
+  const members = [tail.from, tail.to].filter(isStage);
+  if (members.length > 0 && !members.includes(cacheStage)) {
     warnings.push(
       `stage drift: current.json=${cacheStage}, journal=${candidate} (journal tail wins)`,
     );
