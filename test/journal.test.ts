@@ -141,3 +141,46 @@ describe("parsePipeline — journal optional / malformed (non-fatal)", () => {
     expect(s.warnings.some((w) => /malformed journal entry/i.test(w))).toBe(true);
   });
 });
+
+describe("parsePipeline — stage drift is membership over the tail transition (ADR 0008)", () => {
+  // A compliant cache may sit at EITHER valid-Stage end of the tail transition: shims record the
+  // most-recently-completed stage (from), while rejection/terminal states leave the cache at the
+  // to-stage. Drift means the cache matches NEITHER end. Real state space: the board-provenance
+  // trajectory (git history 2c6c072..e741942 × journal seq 1–8).
+
+  it("no drift when the cache holds the tail's from-stage (most-recently-completed)", () => {
+    const s = parsePipeline(fx("journal-cache-from")); // cache=arch, tail arch→task
+    expect(s.stage).toBe("task"); // display stays the tail's to-stage
+    expect(s.stageSource).toBe("journal");
+    expect(s.warnings.some((w) => /stage drift/i.test(w))).toBe(false);
+  });
+
+  it("no drift when a rejection tail leaves the cache at the to-stage; feature reads blocked", () => {
+    const s = parsePipeline(fx("journal-rejection")); // cache=impl, tail review→impl failed
+    expect(s.stage).toBe("impl");
+    expect(s.featureBlocked).toBe(true);
+    expect(s.warnings.some((w) => /stage drift/i.test(w))).toBe(false);
+  });
+
+  it("no drift when the tail re-runs a stage (from == to == cache)", () => {
+    const s = parsePipeline(fx("journal-blocked")); // cache=impl, tail impl→impl failed
+    expect(s.warnings.some((w) => /stage drift/i.test(w))).toBe(false);
+  });
+
+  it("no drift on a terminal tail with the cache at done", () => {
+    const s = parsePipeline(fx("journal-incident-recovered")); // cache=done, tail review→done
+    expect(s.warnings.some((w) => /stage drift/i.test(w))).toBe(false);
+  });
+
+  it("no drift when the tail routes to a non-stage target and the cache holds the from-stage", () => {
+    const s = parsePipeline(fx("journal-integration-incident")); // cache=review, tail review→hunt
+    expect(s.warnings.some((w) => /stage drift/i.test(w))).toBe(false);
+  });
+
+  it("suppresses drift on a corrupt tail with no valid-stage endpoint; display falls back to the cache", () => {
+    const s = parsePipeline(fx("journal-tail-nonstage")); // cache=arch, tail x→y
+    expect(s.stage).toBe("arch");
+    expect(s.stageSource).toBe("journal");
+    expect(s.warnings.some((w) => /stage drift/i.test(w))).toBe(false);
+  });
+});
