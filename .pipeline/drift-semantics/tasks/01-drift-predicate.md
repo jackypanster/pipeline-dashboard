@@ -1,7 +1,7 @@
 ---
 id: "01"
 title: Drift predicate — membership over the tail transition
-status: todo
+status: in-progress
 attempts: 0
 spec-rev: bc59f1d
 verify: npm run build && npm test -- journal
