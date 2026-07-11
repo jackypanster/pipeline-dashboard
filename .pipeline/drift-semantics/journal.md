@@ -43,3 +43,31 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/drift-semant
 Your task: review the diff/PR for card 01 (spec-rev=bc59f1d). Freeze gate: test/journal.test.ts + the four journal fixtures must be untouched. Product diff must be confined to src/parse.ts (ideally only the drift predicate inside resolveStage). Full-verify `npm run build && npm test` (60 tests) green. Only merge after explicit human confirmation.
 Feature gotchas: display-candidate / stageSource / warning message text must be unchanged; expected product diff is a handful of lines — anything more is scope creep.
 <<< END
+
+## seq=5 · 2026-07-11T07:42:46Z · review→review · completed · by=codex-gpt-5
+done:   review verdict approved at PR head a39e4ba; freeze/protected-boundary gates passed, product diff confined to the resolveStage drift predicate, 60/60 full verify green, and CodeRabbit successful; awaiting explicit human merge confirmation.
+output: .pipeline/drift-semantics/reviews/review-01.md
+--- handoff ---
+>>> NEXT
+Resume pipeline-review only after the human explicitly confirms merging PR #7.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/drift-semantics pr=https://github.com/jackypanster/pipeline-dashboard/pull/7 card=01
+Model: frontier SOTA required — operator assigns the bot; the pipeline can't verify the model.
+First: git pull --rebase; load repo config (.env if present, per CONTRACT step 2).
+Read for context (before acting):
+  - AGENTS.md — repo-wide project conventions
+  - .pipeline/drift-semantics/PRD.md — intended drift semantics
+  - .pipeline/drift-semantics/arch.md — predicate and boundary decisions
+  - .pipeline/drift-semantics/tasks/01-drift-predicate.md — card 01, status review
+  - .pipeline/drift-semantics/reviews/review-01.md — approved verdict and verification evidence
+  - .pipeline/drift-semantics/journal.md — authoritative tail
+Your task (concrete, numbered):
+  1. Require explicit human confirmation to merge PR #7; without it, stop and ask.
+  2. Re-read PR #7 and ensure its head is still a39e4ba2efcea002e5b1993f3b6227f868432f59, card 01 is review, and checks remain green. If the head changed, re-run all review gates.
+  3. On confirmation, squash-merge PR #7 through GitHub and delete the merged feature branch; never perform a local non-PR merge.
+  4. After merge, set card 01 status to done and .pipeline/current.json stage to done; append the final review→done journal entry, commit the metadata once, and push main.
+Feature gotchas (project-specific traps the next node MUST know):
+  - Frozen spec-rev bc59f1d covers test/journal.test.ts plus journal-drift, journal-cache-from, journal-rejection, and journal-tail-nonstage fixtures.
+  - Product diff must remain confined to the resolveStage membership predicate; display candidate, stageSource, featureBlocked, and warning text stay unchanged.
+  - Merge is incomplete until PR merge, branch deletion, card→done, current.json→done, final journal entry, metadata commit, and push all succeed.
+Done when: PR #7 is squash-merged only after explicit human confirmation and all terminal metadata is pushed. On failure: do not claim done; record the exact blocker.
+<<< END
