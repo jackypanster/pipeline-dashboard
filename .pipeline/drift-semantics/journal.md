@@ -32,3 +32,14 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=none card
 Your task: branch feat/drift-semantics off main; make `npm run build && npm test -- journal` green by swapping ONLY the drift predicate inside resolveStage (src/parse.ts:139-167) per the card + ADR 0008: members = [tail.from, tail.to].filter(isStage); warn ⇔ members non-empty ∧ cache ∉ members. Keep display-candidate selection, stageSource, and the warning message text EXACTLY unchanged. Then full-verify `npm run build && npm test` (60 tests) green. Open a PR to main. NEVER touch spec-paths (test/journal.test.ts + the four journal fixtures, spec-rev=bc59f1d) nor src/model.ts, src/journal.ts, src/frontmatter.ts, src/render.ts, src/cli.ts, src/provenance.ts.
 Feature gotchas: expected product diff is a handful of lines in ONE function — anything more is scope creep; the 16 green journal tests are regression pins, if one turns red your change is wrong; after green, rendering THIS repo (cache=task, tail task→impl) must show no drift warning — a good live smoke check.
 <<< END
+
+## seq=4 · 2026-07-11T07:40:27Z · impl→review · completed · by=grok-4-5
+done:   card 01 green — resolveStage drift predicate swapped to membership over {tail.from, tail.to} (ADR 0008); 17/17 journal + 60/60 full suite; live smoke this repo (cache=task, tail task→impl) has no drift warning; PR #7 opened (feat/drift-semantics → main). Product diff = 4 lines in src/parse.ts only.
+output: src/parse.ts
+--- handoff ---
+>>> NEXT
+Run pipeline-review.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/drift-semantics pr=https://github.com/jackypanster/pipeline-dashboard/pull/7 card=01
+Your task: review the diff/PR for card 01 (spec-rev=bc59f1d). Freeze gate: test/journal.test.ts + the four journal fixtures must be untouched. Product diff must be confined to src/parse.ts (ideally only the drift predicate inside resolveStage). Full-verify `npm run build && npm test` (60 tests) green. Only merge after explicit human confirmation.
+Feature gotchas: display-candidate / stageSource / warning message text must be unchanged; expected product diff is a handful of lines — anything more is scope creep.
+<<< END

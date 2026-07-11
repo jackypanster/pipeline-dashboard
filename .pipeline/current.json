@@ -1,9 +1,9 @@
 {
   "repo": "https://github.com/jackypanster/pipeline-dashboard",
   "branch": "main",
-  "pr": "none",
+  "pr": "https://github.com/jackypanster/pipeline-dashboard/pull/7",
   "feature": "drift-semantics",
-  "stage": "task",
+  "stage": "impl",
   "full-verify": [
     "npm run build",
     "npm test"
