@@ -32,3 +32,14 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=none card
 Your task: branch feat/board-provenance off main; make `npm run build && npm test -- provenance` green — create src/provenance.ts, extend renderBoard (OPTIONAL 2nd param), shebang src/cli.ts:1, wire buildBoard, ensure dist/cli.js keeps the exec bit (package.json build script is yours). Then full-verify `npm run build && npm test` must be green (existing 46 incl. 14 render tests pin the no-param output). Open a PR to main. NEVER touch test/provenance.spec.test.ts (frozen, spec-rev=99ac7e1) nor src/parse.ts, src/model.ts, src/journal.ts, src/frontmatter.ts.
 Feature gotchas: footer separator is " · " U+00B7; timestamp truncates millis (toISOString → strip .NNN); abbrev-ref literal "HEAD" = detached → branch null; execFileSync no-shell with stderr suppressed; read-only toward the observed repo — never write into it. Freeze coverage note for review: npm-link UX is NOT frozen — verify by hand.
 <<< END
+
+## seq=4 · 2026-07-11T06:25:23Z · impl→review · completed · by=grok-4-5
+done:   card 01 green — provenance.ts + renderBoard optional footer + cli shebang + chmod build; 8/8 provenance + 54/54 full suite; PR #6 opened (feat/board-provenance → main).
+output: src/provenance.ts, src/render.ts, src/cli.ts, package.json
+--- handoff ---
+>>> NEXT
+Run pipeline-review.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/board-provenance pr=https://github.com/jackypanster/pipeline-dashboard/pull/6 card=01
+Your task: review the diff/PR for card 01 (spec-rev=99ac7e1). Freeze gate: test/provenance.spec.test.ts must be untouched. Confirm parse/model/journal/frontmatter have zero diff. Full-verify `npm run build && npm test` green. Hand-verify npm-link UX (NOT frozen): `npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html`. Only merge after explicit human confirmation.
+Feature gotchas: footer separator U+00B7; millis truncated; detached→(detached); read-only toward observed repo.
+<<< END

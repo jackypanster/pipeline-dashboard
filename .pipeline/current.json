@@ -1,8 +1,11 @@
 {
   "repo": "https://github.com/jackypanster/pipeline-dashboard",
   "branch": "main",
-  "pr": "none",
+  "pr": "https://github.com/jackypanster/pipeline-dashboard/pull/6",
   "feature": "board-provenance",
-  "stage": "task",
-  "full-verify": ["npm run build", "npm test"]
+  "stage": "impl",
+  "full-verify": [
+    "npm run build",
+    "npm test"
+  ]
 }
