@@ -1,8 +1,8 @@
 ---
 id: "01"
 title: Provenance footer + executable bin
-status: review
-attempts: 0
+status: todo
+attempts: 1
 spec-rev: 99ac7e1
 verify: npm run build && npm test -- provenance
 spec-paths: test/provenance.spec.test.ts
@@ -37,3 +37,11 @@ degrade, and optionality; built-artifact executability (shebang line + direct ex
 `dist/cli.js`). NOT frozen: `npm link` end-to-end UX — review verifies by hand
 (`npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html`); byte-identical
 no-param render is guarded by the EXISTING render tests via full-verify, not re-frozen here.
+
+## Review 01 required fix
+
+- `src/cli.ts:59` compares the npm bin symlink path in `process.argv[1]` with the resolved real path
+  from `import.meta.url`. After `npm link`, the condition is false, so `run()` is skipped: the command
+  exits 0 without writing the requested board. Make the main-module guard symlink-safe, then rerun
+  `npm run build && npm test` and the exact hand check
+  `npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html`.

@@ -43,3 +43,32 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/board-proven
 Your task: review the diff/PR for card 01 (spec-rev=99ac7e1). Freeze gate: test/provenance.spec.test.ts must be untouched. Confirm parse/model/journal/frontmatter have zero diff. Full-verify `npm run build && npm test` green. Hand-verify npm-link UX (NOT frozen): `npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html`. Only merge after explicit human confirmation.
 Feature gotchas: footer separator U+00B7; millis truncated; detached→(detached); read-only toward observed repo.
 <<< END
+
+## seq=5 · 2026-07-11T06:32:21Z · review→impl · failed · by=codex-gpt-5
+done:   review changes-requested — freeze/boundary gates and 54-test full verify passed, but the required npm-link UX silently exited 0 without creating /tmp/b.html because the CLI entrypoint guard is not symlink-safe; card 01 attempts=1, status=todo.
+output: .pipeline/board-provenance/reviews/review-01.md, .pipeline/board-provenance/tasks/01-provenance-footer.md
+--- handoff ---
+>>> NEXT
+Run pipeline-impl on a FRESH session (assume you know nothing — rebuild from the repo + CONTRACT.md).
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/board-provenance pr=https://github.com/jackypanster/pipeline-dashboard/pull/6 card=01
+Model: capable-local OK (impl only) — operator assigns the bot; the pipeline can't verify the model.
+First: git pull --rebase; load repo config (.env if present, per CONTRACT step 2).
+Read for context (before acting):
+  - AGENTS.md — repo-wide project conventions
+  - .pipeline/board-provenance/PRD.md — what
+  - .pipeline/board-provenance/arch.md — how / component boundaries / data flow
+  - .pipeline/dashboard/CONTEXT.md — domain glossary + conventions
+  - .pipeline/board-provenance/tasks/01-provenance-footer.md — card + required fix
+  - .pipeline/board-provenance/reviews/review-01.md — rejection evidence
+  - .pipeline/dashboard/docs/adr/0007-provenance-collected-in-shell.md — binding provenance decision
+Your task (concrete, numbered):
+  1. On feat/board-provenance, fix src/cli.ts's main-module guard so npm's bin symlink invokes run(); never touch test/provenance.spec.test.ts (spec-rev=99ac7e1).
+  2. Run npm run build && npm test and require all 54 tests green.
+  3. Run npm link && pipeline-dashboard test/fixtures/happy --out /tmp/b.html and assert /tmp/b.html exists and contains the provenance footer; clean up the temporary link.
+  4. Push the updated PR branch and set card 01 back to review through pipeline-impl's normal handoff.
+Feature gotchas (project-specific traps the next node MUST know):
+  - Direct dist/cli.js execution already passes; the failure exists only through npm's symlinked bin path, where process.argv[1] and import.meta.url use different spellings of the same file.
+  - Preserve the optional renderBoard provenance parameter, U+00B7 separator, seconds precision, detached label, and read-only observed-repo invariant.
+  - parse/model/journal/frontmatter must retain zero product diff; the frozen provenance spec must remain untouched.
+Done when: the exact npm-link hand check creates /tmp/b.html, full verification is green, and PR #6 is updated. On success: card 01 → review, then run pipeline-review. On failure: attempts++; >=3 ⇒ blocked ⇒ run pipeline-hunt.
+<<< END
