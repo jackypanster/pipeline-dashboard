@@ -111,3 +111,24 @@ Feature gotchas (project-specific traps the next node MUST know):
   - Merge is not complete until PR merge, card→done, current.json→done, final journal entry, metadata commit, and push all succeed.
 Done when: PR #6 is squash-merged only after explicit human confirmation, card 01 and current.json are done, the final journal entry is pushed, and the feature branch is deleted. On failure: do not claim done; record the exact blocker.
 <<< END
+
+## seq=8 · 2026-07-11T06:49:18Z · review→done · completed · by=codex-gpt-5
+done:   human-confirmed squash merge completed — PR #6 merged as a4b0e4730821cdd5f1b9ecf22a51c3fe07f9fd4c; remote feat/board-provenance deleted; card 01 status=done and current.json stage=done.
+output: https://github.com/jackypanster/pipeline-dashboard/pull/6, .pipeline/board-provenance/reviews/review-02.md, .pipeline/board-provenance/tasks/01-provenance-footer.md, .pipeline/current.json
+--- handoff ---
+>>> NEXT
+Feature board-provenance is complete; no pipeline stage remains.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=https://github.com/jackypanster/pipeline-dashboard/pull/6 card=01
+Model: none — terminal handoff.
+First: git pull --rebase to observe the completed state.
+Read for context:
+  - .pipeline/board-provenance/reviews/review-02.md — approved review evidence
+  - .pipeline/board-provenance/journal.md — authoritative completed run
+Completion state:
+  1. PR #6 squash-merged as a4b0e4730821cdd5f1b9ecf22a51c3fe07f9fd4c after explicit human confirmation.
+  2. Remote feat/board-provenance branch deleted.
+  3. Card 01 status=done; .pipeline/current.json stage=done.
+Feature gotchas:
+  - /tmp/b.html is the retained npm-link hand-check artifact; the repository's untracked board.html belongs to the user and was not modified.
+Done when: already satisfied; no further pipeline action required.
+<<< END
