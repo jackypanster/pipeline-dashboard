@@ -1,8 +1,8 @@
 {
   "repo": "https://github.com/jackypanster/pipeline-dashboard",
   "branch": "main",
-  "pr": "https://github.com/jackypanster/pipeline-dashboard/pull/5",
-  "feature": "journal-aware",
-  "stage": "done",
+  "pr": "none",
+  "feature": "board-provenance",
+  "stage": "prd",
   "full-verify": ["npm run build", "npm test"]
 }
