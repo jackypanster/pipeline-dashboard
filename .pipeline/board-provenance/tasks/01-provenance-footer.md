@@ -1,7 +1,7 @@
 ---
 id: "01"
 title: Provenance footer + executable bin
-status: todo
+status: in-progress
 attempts: 1
 spec-rev: 99ac7e1
 verify: npm run build && npm test -- provenance
