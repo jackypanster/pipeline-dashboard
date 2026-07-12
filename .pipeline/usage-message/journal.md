@@ -54,3 +54,18 @@ Your task:
 Feature gotchas: preserve the untracked repository-root board.html; frozen test/usage.spec.test.ts stays untouched; `--help` is explicitly Non-scope; merge is incomplete until PR merge, card/current state, final journal entry, metadata commit, push, and remote branch deletion all succeed.
 Done when: PR #8 is squash-merged only after explicit human confirmation and all terminal metadata is pushed.
 <<< END
+
+## seq=6 · 2026-07-12T03:19:36Z · review→done · completed · by=codex-gpt-5
+done:   human-confirmed squash merge completed — PR #8 merged as e287246c6eb7a59285b340648ac6d90013a8c355; remote feat/usage-message deleted; card 01 status=done and current.json stage=done.
+output: https://github.com/jackypanster/pipeline-dashboard/pull/8, .pipeline/usage-message/reviews/review-01.md, .pipeline/usage-message/tasks/01.md, .pipeline/current.json
+--- handoff ---
+>>> NEXT
+Feature usage-message is complete; no pipeline stage remains.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=https://github.com/jackypanster/pipeline-dashboard/pull/8 card=01
+Completion state:
+  1. PR #8 squash-merged as e287246c6eb7a59285b340648ac6d90013a8c355 after explicit human confirmation.
+  2. Remote feat/usage-message branch deleted.
+  3. Card 01 status=done; .pipeline/current.json stage=done and points to the merged PR.
+Feature gotchas: repository-root board.html remains untracked user state and was not modified; `--help` remains explicit Non-scope.
+Done when: already satisfied; no further pipeline action required.
+<<< END

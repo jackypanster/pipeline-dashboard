@@ -1,9 +1,9 @@
 {
   "repo": "https://github.com/jackypanster/pipeline-dashboard",
   "branch": "main",
-  "pr": "none",
+  "pr": "https://github.com/jackypanster/pipeline-dashboard/pull/8",
   "feature": "usage-message",
-  "stage": "impl",
+  "stage": "done",
   "full-verify": [
     "npm run build",
     "npm test"
