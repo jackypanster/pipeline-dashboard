@@ -28,3 +28,12 @@ repo=https://github.com/jackypanster/pipeline-dashboard branch=main pr=none card
 Your task: git pull --rebase; branch feat/usage-message off main; implement per the card (src/cli.ts ONLY); make `npm run build && npm test -- usage` green (3/3), then full `npm run build && npm test` green; push; open a PR to main; flip card 01 -> review on trunk; APPEND your journal entry AT THE FILE END of .pipeline/usage-message/journal.md (append == >> at the END; the physically-last entry is the authority; header format EXACTLY: ## seq=4 · <ISO-8601 UTC> · impl→review · completed · by=<your tag> — no spaces around the arrow) + commit metadata once + push trunk. The run is INCOMPLETE until the remote journal's physically-last entry is yours.
 Feature gotchas: never touch test/usage.spec.test.ts (frozen, spec-rev=c6a9041) nor src/parse.ts, src/model.ts, src/journal.ts, src/frontmatter.ts, src/render.ts, src/provenance.ts; stderr only, stdout stays reserved; exit codes unchanged.
 <<< END
+
+## seq=4 · 2026-07-12T02:58:51Z · impl→review · completed · by=pi
+done:   Card 01 implemented on feat/usage-message (commit c0961d4) — USAGE const + usageError() routing the three argument-error return-1 sites in src/cli.ts (no target / unknown arg / --out missing value); guard and catch return-1 untouched; stderr only; exit codes unchanged; valid runs byte-identical. Card verify `npm run build && npm test -- usage` 3/3 green; full `npm run build && npm test` 7 files / 63 tests green. No forge token available — branch pushed, PR must be opened manually.
+output: src/cli.ts (c0961d4 @ feat/usage-message)
+--- handoff ---
+>>> NEXT
+Run pipeline-review. repo=https://github.com/jackypanster/pipeline-dashboard branch=main
+Review the complete feature on feat/usage-message (base main). Card 01 is status=review, spec-rev c6a9041; this is the only card, so review runs once on the whole feature. Open the PR manually first (no forge token this run): https://github.com/jackypanster/pipeline-dashboard/pull/new/feat/usage-message . Freeze gate: spec-paths test/usage.spec.test.ts unchanged; only src/cli.ts touched on the branch; full suite already 63/63 green locally.
+<<< END
