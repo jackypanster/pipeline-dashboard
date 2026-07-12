@@ -3,7 +3,7 @@
   "branch": "main",
   "pr": "none",
   "feature": "usage-message",
-  "stage": "prd",
+  "stage": "arch",
   "full-verify": [
     "npm run build",
     "npm test"
