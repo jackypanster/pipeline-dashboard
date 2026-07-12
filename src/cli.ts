@@ -7,6 +7,8 @@ import { parsePipeline } from "./parse.js";
 import { collectProvenance } from "./provenance.js";
 import { renderBoard } from "./render.js";
 
+const USAGE = "Usage: pipeline-dashboard <target-repo> [--out <board.html>]";
+
 export function buildBoard(targetRepoPath: string): string {
   const state = parsePipeline(join(targetRepoPath, ".pipeline"));
   // Clock at the shell edge — inject so provenance stays a pure data object for render.
@@ -14,10 +16,15 @@ export function buildBoard(targetRepoPath: string): string {
   return renderBoard(state, provenance);
 }
 
+function usageError(): number {
+  console.error(USAGE);
+  return 1;
+}
+
 export function run(args: string[]): number {
   const targetRepoPath = args[0];
   if (!targetRepoPath) {
-    return 1;
+    return usageError();
   }
 
   let outPath = resolve("board.html");
@@ -26,14 +33,14 @@ export function run(args: string[]): number {
     if (arg === "--out") {
       const value = args[index + 1];
       if (!value) {
-        return 1;
+        return usageError();
       }
       outPath = resolve(value);
       index += 1;
       continue;
     }
 
-    return 1;
+    return usageError();
   }
 
   if (isInsidePipelineDir(targetRepoPath, outPath)) {
