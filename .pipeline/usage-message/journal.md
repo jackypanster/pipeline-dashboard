@@ -37,3 +37,20 @@ output: src/cli.ts (c0961d4 @ feat/usage-message)
 Run pipeline-review. repo=https://github.com/jackypanster/pipeline-dashboard branch=main
 Review the complete feature on feat/usage-message (base main). Card 01 is status=review, spec-rev c6a9041; this is the only card, so review runs once on the whole feature. Open the PR manually first (no forge token this run): https://github.com/jackypanster/pipeline-dashboard/pull/new/feat/usage-message . Freeze gate: spec-paths test/usage.spec.test.ts unchanged; only src/cli.ts touched on the branch; full suite already 63/63 green locally.
 <<< END
+
+## seq=5 · 2026-07-12T03:16:12Z · review→review · completed · by=codex-gpt-5
+done:   review verdict approved at PR head c0961d4; freeze/product-path gates passed, 63/63 full verify green, direct CLI argument-error/valid-output contracts passed, and packaged-install bin smoke passed; awaiting explicit human merge confirmation.
+output: .pipeline/usage-message/reviews/review-01.md
+--- handoff ---
+>>> NEXT
+Resume pipeline-review only after the human explicitly confirms merging PR #8.
+repo=https://github.com/jackypanster/pipeline-dashboard branch=feat/usage-message pr=https://github.com/jackypanster/pipeline-dashboard/pull/8 card=01
+First: git pull --rebase; read AGENTS.md, .pipeline/usage-message/reviews/review-01.md, the card, and this journal tail.
+Your task:
+  1. Require explicit human confirmation to merge PR #8; without it, stop and ask.
+  2. Re-read PR #8 and ensure its head is still c0961d4de7893bb9a49e872a88447f9b54b3908f, card 01 is review, and checks remain green. If the head changed, re-run all review gates.
+  3. On confirmation, squash-merge PR #8 through GitHub and delete the merged feature branch; never perform a local non-PR merge.
+  4. After merge, set card 01 status to done and .pipeline/current.json stage to done; set current.json.pr to the merged PR URL; append the final review→done journal entry, commit the metadata once, and push main.
+Feature gotchas: preserve the untracked repository-root board.html; frozen test/usage.spec.test.ts stays untouched; `--help` is explicitly Non-scope; merge is incomplete until PR merge, card/current state, final journal entry, metadata commit, push, and remote branch deletion all succeed.
+Done when: PR #8 is squash-merged only after explicit human confirmation and all terminal metadata is pushed.
+<<< END
